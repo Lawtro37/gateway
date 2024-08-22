@@ -209,12 +209,12 @@ const server = http.createServer(async (req, res) => {
                 if (p2.startsWith('http') || p2.startsWith('https') || p2.startsWith('//')) {
                     // Rewrite absolute URLs
                     const absoluteUrl = p2.startsWith('//') ? `http:${p2}` : p2;
-                    rewrittenUrl = `http://${networkIP}:3000/${absoluteUrl}`;
+                    rewrittenUrl = `http://${networkIP}/${absoluteUrl}`;
                 } else {
                     // Rewrite relative URLs
                     const baseUrl = `${url.parse(requestedSite).protocol}//${url.parse(requestedSite).host}`;
                     const relativeUrl = p2.startsWith('/') ? p2 : `/${p2}`;
-                    rewrittenUrl = `http://${networkIP}:3000/${baseUrl}${relativeUrl}`;
+                    rewrittenUrl = `http://${networkIP}/${baseUrl}${relativeUrl}`;
                 }
                 console.log(`${p1}${rewrittenUrl}${p3}`);
                 return `${p1}${rewrittenUrl}${p3}`;
@@ -236,11 +236,11 @@ const server = http.createServer(async (req, res) => {
                 if (p1.startsWith('http') || p1.startsWith('https') || p1.startsWith('//')) {
                     // Rewrite absolute URLs
                     const absoluteUrl = p1.startsWith('//') ? `http:${p1}` : p1;
-                    return `url(http://${networkIP}:3000/${absoluteUrl})`;
+                    return `url(http://${networkIP}/${absoluteUrl})`;
                 }
                 // Rewrite relative URLs
                 const relativeUrl = p1.startsWith('/') ? p1 : `/${p1}`;
-                return `url(http://${networkIP}:3000${baseUrl}${relativeUrl})`;
+                return `url(http://${networkIP}${baseUrl}${relativeUrl})`;
             });
         
             // Set the response headers
@@ -320,22 +320,22 @@ const server = http.createServer(async (req, res) => {
                     const [url, descriptor] = src.trim().split(' ');
                     if (url.startsWith('http') || url.startsWith('https') || url.startsWith('//')) {
                         const absoluteUrl = url.startsWith('//') ? `http:${url}` : url;
-                        return `http://${networkIP}:3000/${absoluteUrl} ${descriptor}`;
+                        return `http://${networkIP}/${absoluteUrl} ${descriptor}`;
                     }
                     const relativeUrl = url.startsWith('/') ? url : `/${url}`;
-                    return `http://${networkIP}:3000/${baseUrl + relativeUrl} ${descriptor}`;
+                    return `http://${networkIP}/${baseUrl + relativeUrl} ${descriptor}`;
                 }).join(', ')}"`;
             } else {
                 if (p2.startsWith('http') || p2.startsWith('https') || p2.startsWith('//')) {
                     // Rewrite absolute URLs
                     const absoluteUrl = p2.startsWith('//') ? `http:${p2}` : p2;
-                    //console.log(`${p1}="http://${networkIP}:3000/${absoluteUrl}"`);
-                    return `${p1}="http://${networkIP}:3000/${absoluteUrl}"`;
+                    //console.log(`${p1}="http://${networkIP}/${absoluteUrl}"`);
+                    return `${p1}="http://${networkIP}/${absoluteUrl}"`;
                 }
                 // Rewrite relative URLs
                 const relativeUrl = p2.startsWith('/') ? p2 : `/${p2}`;
-                //console.log(`${p1}="http://${networkIP}:3000/${baseUrl + relativeUrl}"`);
-                return `${p1}="http://${networkIP}:3000/${baseUrl + relativeUrl}"`;
+                //console.log(`${p1}="http://${networkIP}/${baseUrl + relativeUrl}"`);
+                return `${p1}="http://${networkIP}/${baseUrl + relativeUrl}"`;
             }
         });
 
@@ -345,11 +345,11 @@ const server = http.createServer(async (req, res) => {
                 if (p1.startsWith('http') || p1.startsWith('https') || p1.startsWith('//')) {
                     // Rewrite absolute URLs
                     const absoluteUrl = p1.startsWith('//') ? `http:${p1}` : p1;
-                    return `url(http://${networkIP}:3000/${absoluteUrl})`;
+                    return `url(http://${networkIP}/${absoluteUrl})`;
                 }
                 // Rewrite relative URLs
                 const relativeUrl = p1.startsWith('/') ? p1 : `/${p1}`;
-                return `url(http://${networkIP}:3000/${baseUrl}${relativeUrl})`;
+                return `url(http://${networkIP}/${baseUrl}${relativeUrl})`;
             });
             return `<style>${modifiedCss}</style>`;
         });
@@ -360,11 +360,11 @@ const server = http.createServer(async (req, res) => {
                 if (p1.startsWith('http') || p1.startsWith('https') || p1.startsWith('//')) {
                     // Rewrite absolute URLs
                     const absoluteUrl = p1.startsWith('//') ? `http:${p1}` : p1;
-                    return `url(http://${networkIP}:3000/${absoluteUrl})`;
+                    return `url(http://${networkIP}/${absoluteUrl})`;
                 }
                 // Rewrite relative URLs
                 const relativeUrl = p1.startsWith('/') ? p1 : `/${p1}`;
-                return `url(http://${networkIP}:3000/${baseUrl}${relativeUrl})`;
+                return `url(http://${networkIP}/${baseUrl}${relativeUrl})`;
             });
             return `style="${modifiedStyle}"`;
         });
