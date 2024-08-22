@@ -56,17 +56,22 @@ function getNetworkIP() {
     return '127.0.0.1'; // Fallback to localhost if no external IP is found
 }
 
-const networkIP = "http://gateway-2g0m.onrender.com";
-console.log(`Server IP address: ${networkIP}`);
+const networkIP = "https://gateway-2g0m.onrender.com";
+console.log(`Server IP address: ${networkIP} (${getNetworkIP()})`);
 
-const server = http.createServer(async (req, res) => {
+const options = {
+    key: fs.readFileSync('server.key'),
+    cert: fs.readFileSync('server.cert')
+}
+
+const server = https.createServer(options, async (req, res) => {
     let ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
     if (req.url === '/favicon.ico') {
         res.writeHead(200, { 'Content-Type': 'image/x-icon' });
         res.end();
         return;
     }
-    if(req.url === 'http://gateway-2g0m.onrender.com') {
+    if(req.url === 'https://gateway-2g0m.onrender.com') {
         return;
     }
     if (req.url === '/' || req.url === '/fetch') {
@@ -209,12 +214,12 @@ const server = http.createServer(async (req, res) => {
                 if (p2.startsWith('http') || p2.startsWith('https') || p2.startsWith('//')) {
                     // Rewrite absolute URLs
                     const absoluteUrl = p2.startsWith('//') ? `http:${p2}` : p2;
-                    rewrittenUrl = `http://${networkIP}/${absoluteUrl}`;
+                    rewrittenUrl = `https://${networkIP}/${absoluteUrl}`;
                 } else {
                     // Rewrite relative URLs
                     const baseUrl = `${url.parse(requestedSite).protocol}//${url.parse(requestedSite).host}`;
                     const relativeUrl = p2.startsWith('/') ? p2 : `/${p2}`;
-                    rewrittenUrl = `http://${networkIP}/${baseUrl}${relativeUrl}`;
+                    rewrittenUrl = `https://${networkIP}/${baseUrl}${relativeUrl}`;
                 }
                 console.log(`${p1}${rewrittenUrl}${p3}`);
                 return `${p1}${rewrittenUrl}${p3}`;
@@ -236,11 +241,11 @@ const server = http.createServer(async (req, res) => {
                 if (p1.startsWith('http') || p1.startsWith('https') || p1.startsWith('//')) {
                     // Rewrite absolute URLs
                     const absoluteUrl = p1.startsWith('//') ? `http:${p1}` : p1;
-                    return `url(http://${networkIP}/${absoluteUrl})`;
+                    return `url(https://${networkIP}/${absoluteUrl})`;
                 }
                 // Rewrite relative URLs
                 const relativeUrl = p1.startsWith('/') ? p1 : `/${p1}`;
-                return `url(http://${networkIP}${baseUrl}${relativeUrl})`;
+                return `url(https://${networkIP}/${baseUrl}${relativeUrl})`;
             });
         
             // Set the response headers
@@ -320,22 +325,22 @@ const server = http.createServer(async (req, res) => {
                     const [url, descriptor] = src.trim().split(' ');
                     if (url.startsWith('http') || url.startsWith('https') || url.startsWith('//')) {
                         const absoluteUrl = url.startsWith('//') ? `http:${url}` : url;
-                        return `http://${networkIP}/${absoluteUrl} ${descriptor}`;
+                        return `https://${networkIP}/${absoluteUrl} ${descriptor}`;
                     }
                     const relativeUrl = url.startsWith('/') ? url : `/${url}`;
-                    return `http://${networkIP}/${baseUrl + relativeUrl} ${descriptor}`;
+                    return `https://${networkIP}/${baseUrl + relativeUrl} ${descriptor}`;
                 }).join(', ')}"`;
             } else {
                 if (p2.startsWith('http') || p2.startsWith('https') || p2.startsWith('//')) {
                     // Rewrite absolute URLs
                     const absoluteUrl = p2.startsWith('//') ? `http:${p2}` : p2;
-                    //console.log(`${p1}="http://${networkIP}/${absoluteUrl}"`);
-                    return `${p1}="http://${networkIP}/${absoluteUrl}"`;
+                    //console.log(`${p1}="http://${networkIP}:3000/${absoluteUrl}"`);
+                    return `${p1}="https://${networkIP}/${absoluteUrl}"`;
                 }
                 // Rewrite relative URLs
                 const relativeUrl = p2.startsWith('/') ? p2 : `/${p2}`;
-                //console.log(`${p1}="http://${networkIP}/${baseUrl + relativeUrl}"`);
-                return `${p1}="http://${networkIP}/${baseUrl + relativeUrl}"`;
+                //console.log(`${p1}="http://${networkIP}:3000/${baseUrl + relativeUrl}"`);
+                return `${p1}="https://${networkIP}/${baseUrl + relativeUrl}"`;
             }
         });
 
@@ -345,11 +350,11 @@ const server = http.createServer(async (req, res) => {
                 if (p1.startsWith('http') || p1.startsWith('https') || p1.startsWith('//')) {
                     // Rewrite absolute URLs
                     const absoluteUrl = p1.startsWith('//') ? `http:${p1}` : p1;
-                    return `url(http://${networkIP}/${absoluteUrl})`;
+                    return `url(https://${networkIP}/${absoluteUrl})`;
                 }
                 // Rewrite relative URLs
                 const relativeUrl = p1.startsWith('/') ? p1 : `/${p1}`;
-                return `url(http://${networkIP}/${baseUrl}${relativeUrl})`;
+                return `url(https://${networkIP}/${baseUrl}${relativeUrl})`;
             });
             return `<style>${modifiedCss}</style>`;
         });
@@ -360,11 +365,11 @@ const server = http.createServer(async (req, res) => {
                 if (p1.startsWith('http') || p1.startsWith('https') || p1.startsWith('//')) {
                     // Rewrite absolute URLs
                     const absoluteUrl = p1.startsWith('//') ? `http:${p1}` : p1;
-                    return `url(http://${networkIP}/${absoluteUrl})`;
+                    return `url(https://${networkIP}/${absoluteUrl})`;
                 }
                 // Rewrite relative URLs
                 const relativeUrl = p1.startsWith('/') ? p1 : `/${p1}`;
-                return `url(http://${networkIP}/${baseUrl}${relativeUrl})`;
+                return `url(https://${networkIP}/${baseUrl}${relativeUrl})`;
             });
             return `style="${modifiedStyle}"`;
         });
