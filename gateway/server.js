@@ -59,7 +59,7 @@ function getNetworkIP() {
 const networkIP = "https://gateway-2g0m.onrender.com";
 console.log(`Server IP address: ${networkIP} (${getNetworkIP()})`);
 
-const server = https.createServer(async (req, res) => {
+const server = http.createServer(async (req, res) => {
     let ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
     if (req.url === '/favicon.ico') {
         res.writeHead(200, { 'Content-Type': 'image/x-icon' });
