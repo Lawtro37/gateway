@@ -56,7 +56,7 @@ function getNetworkIP() {
     return '127.0.0.1'; // Fallback to localhost if no external IP is found
 }
 
-const networkIP = "gateway-2g0m.onrender.com";
+const networkIP = "gateway.lawtrostudios.com";
 console.log(`Server IP address: ${networkIP} (${getNetworkIP()})`);
 
 const server = http.createServer(async (req, res) => {
@@ -66,7 +66,7 @@ const server = http.createServer(async (req, res) => {
         res.end();
         return;
     }
-    if(req.url === 'https://gateway-2g0m.onrender.com') {
+    if(req.url === 'https://gateway.lawtrostudios.com') {
         return;
     }
     if (req.url === '/' || req.url === '/fetch') {
@@ -329,12 +329,12 @@ const server = http.createServer(async (req, res) => {
                 if (p2.startsWith('http') || p2.startsWith('https') || p2.startsWith('//')) {
                     // Rewrite absolute URLs
                     const absoluteUrl = p2.startsWith('//') ? `http:${p2}` : p2;
-                    //console.log(`${p1}="http://${networkIP}:3000/${absoluteUrl}"`);
+                    //console.log(`${p1}="http://${networkIP}:80/${absoluteUrl}"`);
                     return `${p1}="https://${networkIP}/${absoluteUrl}"`;
                 }
                 // Rewrite relative URLs
                 const relativeUrl = p2.startsWith('/') ? p2 : `/${p2}`;
-                //console.log(`${p1}="http://${networkIP}:3000/${baseUrl + relativeUrl}"`);
+                //console.log(`${p1}="http://${networkIP}:80/${baseUrl + relativeUrl}"`);
                 return `${p1}="https://${networkIP}/${baseUrl + relativeUrl}"`;
             }
         });
@@ -457,8 +457,8 @@ const server = http.createServer(async (req, res) => {
     }//}
 });
 
-server.listen(3000, () => {
-    console.log(`Server is listening on port 3000 and IP address ${networkIP}`);
+server.listen(80, () => {
+    console.log(`Server is listening on port 80 and IP address ${networkIP}`);
 });
 
 process.on('uncaughtException', (err) => {
@@ -487,7 +487,7 @@ process.on('uncaughtException', (err) => {
     // attempt to close the server and restart
     server.close(() => {
         console.log('Server closed due to uncaught exception. Restarting...');
-        server.listen(3000, () => {
+        server.listen(80, () => {
             console.log(`Server restarted at ${networkIP}`);
         });
     });
