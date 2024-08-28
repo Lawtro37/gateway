@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link rel="stylesheet" type="text/css" href="style.css">
+    <link rel="icon" href="./assets/icon.ico" type="image/x-icon">
+    <link rel="stylesheet" type="text/css" href="style.css">
+</head>
+<body>
+    <div class="header">
+        <div class="logo animate-fade-in"><img src="./assets/LawtroStudios.png" alt="LawtroStudios Logo" /></div>
+        <div class="menu animate-fade-in">
+            <div class="button"><h2><a href="https://www.lawtrostudios.com">Home</a></h2></div>
+            <div class="button"><h2><a href="https://www.lawtrostudios.com/#projects">Projects</a></h2></div>
+        </div>
+    </div>
+
+    <img/>
+
+    <div class="about-me animate-fade-in" style="margin-top: 70px;">
+        <h1>LawtroStudios Gateway</h1>
+        <p>
+            project gateway
+        </p>
+    </div>
+
+    <div class="portfolio">
+        <a href="https://www.lawtrostudios.com/solar-view">
+            <div class="project">
+                <div class="imageflex">
+                    <img src="./assets/solar view.png" alt="Solar View">
+                    <div class="imageflexcontent">
+                        <h1>Solar View</h1>
+                        <p>Solar View allows users to explore and interact with a virtual representation of our solar system. You can learn about the planets, their orbits, and other celestial objects in a fun and immersive way.</p>
+                        <div class="tags">
+                            <ul>
+                                <li><p>educational</p></li>
+                                <li><p>space</p></li>
+                                <li><p>interactive</p></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </a>
+        <a href="https://www.lawtrostudios.com/3Drenderer/demo/octahedron/">
+            <div class="project">
+                <div class="imageflex">
+                    <img src="./assets/3D renderer.png" alt="3D Renderer">
+                    <div class="imageflexcontent">
+                        <h1>Custom 3D Renderer</h1>
+                        <p>A custom 3D renderer for JavaScript that allows for the creation of custom models using JSON files. it's a versatile tool for developers and enthusiasts interested in 3D graphics.</p>
+                        <div class="tags">
+                            <ul>
+                                <li><p>experimental</p></li>
+                                <li><p>project</p></li>
+                                <li><p>rendering</p></li>
+                                <li><p>interactive</p></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </a>
+    </div>
+
+    <div class="footer">
+        <h1>Contact Information</h1>
+        <p>Email: <a href="mailto:Lawton37@hotmail.com">Lawton37@hotmail.com</a></p>
+        <h1>Follow Me</h1>
+        <p>Connect with me on social media:</p>
+        <ul>
+            <li><a href="www.linkedin.com/in/lawton-kelly">LinkedIn</a></li>
+            <li><a href="https://github.com/lawtro37">GitHub</a></li>
+            <li><a href="https://www.youtube.com/@Lawtro">Youtube</a></li>
+        </ul>
+        <p>&copy; 2024 Lawton Kelly. All rights reserved.</p>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/aos/2.3.4/aos.js"></script>
+    <script>
+        AOS.init({
+            duration: 1000,
+        });
+
+        const projects = document.querySelectorAll('.project');
+
+        window.addEventListener('scroll', () => {
+            projects.forEach((project) => {
+                const rect = project.getBoundingClientRect();
+                if (rect.top >= 0 && rect.bottom <= window.innerHeight) {
+                    project.classList.add('active');
+                } else {
+                    project.classList.remove('active');
+                }
+            });
+        });
+    </script>
+
+    <script>
+        // Function to check if an element is in the viewport
+        function isElementInViewport(element) {
+            const rect = element.getBoundingClientRect();
+            return (
+                rect.top >= 0 &&
+                rect.left >= 0 &&
+                rect.bottom <= (window.innerHeight || document.documentElement.clientHeight) &&
+                rect.right <= (window.innerWidth || document.documentElement.clientWidth)
+            );
+        }
+
+        // Function to handle scrolling and apply animation to projects
+        function handleScroll() {
+            const projects = document.querySelectorAll('.project');
+
+            projects.forEach((project) => {
+                if (isElementInViewport(project)) {
+                    project.classList.add('active');
+                }
+            });
+        }
+
+        // Listen for the scroll event and handle it
+        window.addEventListener('scroll', handleScroll);
+
+        // Initially call the handleScroll function to check projects in view on page load
+        handleScroll();
+    </script>
+
+    <script>
+        // Adding animation class after page load
+        window.onload = function() {
+            const elements = document.querySelectorAll('.animate-fade-in');
+            elements.forEach((element, index) => {
+                setTimeout(() => {
+                    element.classList.add('animate-fade-in');
+                }, index * 500);
+            });
+        }
+    </script>
+</body>
+</html>
