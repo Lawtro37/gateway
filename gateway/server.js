@@ -390,7 +390,7 @@ const server = http.createServer(async (req, res) => {
         // Generate the HTML for all errors
         const errorDetailsHtml = errors.map((err, index) => `
             <div class="error-item">
-                <pre>${errors.message}</pre>
+                <pre>${error.message}</pre>
             </div>
         `).join('');
 
