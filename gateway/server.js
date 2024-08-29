@@ -61,6 +61,10 @@ console.log(`Server IP address: ${networkIP} (${getNetworkIP()})`);
 
 const server = http.createServer(async (req, res) => {
     let ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
+    if(req.url !== "/gateway"){
+        return;
+    }
+    req.url.replace("/gateway", "")
     if (req.url === '/favicon.ico') {
         res.writeHead(200, { 'Content-Type': 'image/x-icon' });
         res.end();
