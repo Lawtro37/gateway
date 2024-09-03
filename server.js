@@ -363,7 +363,7 @@ const server = http.createServer(async (req, res) => {
                     if (p1 === 'data:image/gif;base64,R0lGODlhAQABAIAAAP///////yH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==') {
                         return match;
                     }
-                    if (!p1.startsWith('http') && !p1.startsWith('https') && !p2.startsWith('//') && !p1.startsWith('data:image')) {
+                    if (!p1.startsWith('http') && !p1.startsWith('https') && !p1.startsWith('//') && !p1.startsWith('data:image')) {
                         // Make relative URLs absolute
                         const absoluteUrl = p1.startsWith('/') ? `${baseUrl}${p1}` : `${baseUrl}/${p1}`;
                         return `url(${absoluteUrl})`;
@@ -389,7 +389,7 @@ const server = http.createServer(async (req, res) => {
                     if (p1 === 'data:image/gif;base64,R0lGODlhAQABAIAAAP///////yH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==') {
                         return match;
                     }
-                    if (!p1.startsWith('http') && !p1.startsWith('https') && !url.startsWith('//') && !p1.startsWith('data:image')) {
+                    if (!p1.startsWith('http') && !p1.startsWith('https') && !p1.startsWith('//') && !p1.startsWith('data:image')) {
                         // Make relative URLs absolute
                         const absoluteUrl = p1.startsWith('/') ? `${baseUrl}${p1}` : `${baseUrl}/${p1}`;
                         return `url(${absoluteUrl})`;
