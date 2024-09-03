@@ -185,7 +185,10 @@ const server = http.createServer(async (req, res) => {
         let response = await axios.get(requestedSite, {
             headers: {
                 'User-Agent': req.headers['user-agent'],
-                'Referer': requestedSite
+                'Referer': requestedSite,
+                'Accept': req.headers['accept'],
+                'Accept-Language': req.headers['accept-language'],
+                'Cookie': req.headers['cookie'] // Forward cookies if present
             },
             httpsAgent: new https.Agent({ rejectUnauthorized: false }), // Handle HTTPS requests
             timeout: 15000 // Set timeout to 15 seconds
