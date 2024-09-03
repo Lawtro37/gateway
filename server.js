@@ -330,7 +330,7 @@ const server = http.createServer(async (req, res) => {
                     return `https://${networkIP}/${baseUrl + relativeUrl} ${descriptor}`;
                 }).join(', ')}"`;
             } else {
-                if (p2.startsWith('http') || p.startsWith('https') || p2.startsWith('//')) {
+                if (p2.startsWith('http') || p2.startsWith('https') || p2.startsWith('//')) {
                     // Rewrite absolute URLs
                     const absoluteUrl = p2.startsWith('//') ? `http:${p2}` : p2;
                     return `${p1}="https://${networkIP}/${absoluteUrl}"`;
