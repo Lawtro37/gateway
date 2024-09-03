@@ -400,8 +400,13 @@ const server = http.createServer(async (req, res) => {
         });
 
         // Set the response headers
-        if(!headersSent) {
-            res.writeHead(200, { 'Content-Type': 'text/html' });
+        // Set the response headers
+        if (!headersSent) {
+            res.writeHead(200, {
+                'Content-Type': 'text/html',
+                'Referrer-Policy': `origin-when-cross-origin`,
+                'Referrer': requestedSite
+            });
             res.end(modifiedHtml);
             headersSent = true;
             return;
