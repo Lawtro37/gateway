@@ -318,6 +318,10 @@ const server = http.createServer(async (req, res) => {
                 // Handle srcset attribute
                 return `${p1}="${p2.split(',').map(src => {
                     const [url, descriptor] = src.trim().split(' ');
+                    const [url2, fileType] = src.trim().split('.');
+                    if(fileType == '.png' || fileType == '.jpg' || fileType == '.jpeg' || fileType == '.gif' || fileType == '.webp' || fileType == '.ico') {
+                        return `https://${url}/${descriptor}`;
+                    }
                     if (url.startsWith('http') || url.startsWith('https') || url.startsWith('//')) {
                         const absoluteUrl = url.startsWith('//') ? `http:${url}` : url;
                         return `https://${networkIP}/${absoluteUrl} ${descriptor}`;
@@ -333,6 +337,9 @@ const server = http.createServer(async (req, res) => {
                 }
                 // Rewrite relative URLs
                 const relativeUrl = p2.startsWith('/') ? p2 : `/${p2}`;
+                if(fileType == '.png' || fileType == '.jpg' || fileType == '.jpeg' || fileType == '.gif' || fileType == '.webp' || fileType == '.ico') {
+                    return `https://${baseUrl + relativeUrl}`;
+                }
                 return `${p1}="https://${networkIP}/${baseUrl + relativeUrl}"`;
             }
         });
@@ -347,6 +354,9 @@ const server = http.createServer(async (req, res) => {
                 }
                 // Rewrite relative URLs
                 const relativeUrl = p1.startsWith('/') ? p1 : `/${p1}`;
+                if(fileType == '.png' || fileType == '.jpg' || fileType == '.jpeg' || fileType == '.gif' || fileType == '.webp' || fileType == '.ico') {
+                    return `https://${baseUrl + relativeUrl}`;
+                }
                 return `url(https://${networkIP}/${baseUrl}${relativeUrl})`;
             });
             return `<style>${modifiedCss}</style>`;
@@ -362,6 +372,9 @@ const server = http.createServer(async (req, res) => {
                 }
                 // Rewrite relative URLs
                 const relativeUrl = p1.startsWith('/') ? p1 : `/${p1}`;
+                if(fileType == '.png' || fileType == '.jpg' || fileType == '.jpeg' || fileType == '.gif' || fileType == '.webp' || fileType == '.ico') {
+                    return `https://${baseUrl + relativeUrl}`;
+                }
                 return `url(https://${networkIP}/${baseUrl}${relativeUrl})`;
             });
             return `style="${modifiedStyle}"`;
