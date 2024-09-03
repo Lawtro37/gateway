@@ -318,7 +318,7 @@ const server = http.createServer(async (req, res) => {
                 // Handle srcset attribute
                 return `${p1}="${p2.split(',').map(src => {
                     const [url, descriptor] = src.trim().split(' ');
-                    if (url.endsWith('.png') || url.endsWith('.jpg') || url.endsWith('.jpeg') || url.endsWith('.gif') || url.endsWith('.webp') || url.endsWith('.ico')) {
+                    if (url.endsWith('.png') || url.endsWith('.jpg') || url.endsWith('.jpeg') || url.endsWith('.gif') || url.endsWith('.webp') || url.endsWith('.ico') || url.includes('data:image')) {
                         if (!url.startsWith('http') && !url.startsWith('https')) {
                             // Make relative URLs absolute
                             const absoluteUrl = url.startsWith('/') ? `${baseUrl}${url}` : `${baseUrl}/${url}`;
@@ -334,7 +334,7 @@ const server = http.createServer(async (req, res) => {
                     return `https://${networkIP}/${baseUrl + relativeUrl} ${descriptor}`;
                 }).join(', ')}"`;
             } else {
-                if (p2.endsWith('.png') || p2.endsWith('.jpg') || p2.endsWith('.jpeg') || p2.endsWith('.gif') || p2.endsWith('.webp') || p2.endsWith('.ico')) {
+                if (p2.endsWith('.png') || p2.endsWith('.jpg') || p2.endsWith('.jpeg') || p2.endsWith('.gif') || p2.endsWith('.webp') || p2.endsWith('.ico') || p2.includes('data:image')) {
                     if (!p2.startsWith('http') && !p2.startsWith('https')) {
                         // Make relative URLs absolute
                         const absoluteUrl = p2.startsWith('/') ? `${baseUrl}${p2}` : `${baseUrl}/${p2}`;
@@ -356,7 +356,7 @@ const server = http.createServer(async (req, res) => {
         // Handle <style> tags
         modifiedHtml = modifiedHtml.replace(/<style[^>]*>([\s\S]*?)<\/style>/gi, (match, cssContent) => {
             let modifiedCss = cssContent.replace(/url\(['"]?([^'")]+)['"]?\)/g, (match, p1) => {
-                if (p1.endsWith('.png') || p1.endsWith('.jpg') || p1.endsWith('.jpeg') || p1.endsWith('.gif') || p1.endsWith('.webp') || p1.endsWith('.ico')) {
+                if (p1.endsWith('.png') || p1.endsWith('.jpg') || p1.endsWith('.jpeg') || p1.endsWith('.gif') || p1.endsWith('.webp') || p1.endsWith('.ico') || p1.includes('data:image')) {
                     if (!p1.startsWith('http') && !p1.startsWith('https')) {
                         // Make relative URLs absolute
                         const absoluteUrl = p1.startsWith('/') ? `${baseUrl}${p1}` : `${baseUrl}/${p1}`;
@@ -379,7 +379,7 @@ const server = http.createServer(async (req, res) => {
         // Handle style attributes
         modifiedHtml = modifiedHtml.replace(/style=['"]([^'"]*)['"]/gi, (match, styleContent) => {
             let modifiedStyle = styleContent.replace(/url\(['"]?([^'")]+)['"]?\)/g, (match, p1) => {
-                if (p1.endsWith('.png') || p1.endsWith('.jpg') || p1.endsWith('.jpeg') || p1.endsWith('.gif') || p1.endsWith('.webp') || p1.endsWith('.ico')) {
+                if (p1.endsWith('.png') || p1.endsWith('.jpg') || p1.endsWith('.jpeg') || p1.endsWith('.gif') || p1.endsWith('.webp') || p1.endsWith('.ico') || p1.includes('data:image')) {
                     if (!p1.startsWith('http') && !p1.startsWith('https')) {
                         // Make relative URLs absolute
                         const absoluteUrl = p1.startsWith('/') ? `${baseUrl}${p1}` : `${baseUrl}/${p1}`;
