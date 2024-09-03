@@ -56,7 +56,7 @@ function getNetworkIP() {
     return '127.0.0.1'; // Fallback to localhost if no external IP is found
 }
 
-const networkIP = "https://gateway.lawtrostudios.com";
+const networkIP = "gateway.lawtrostudios.com";
 console.log(`Server IP address: (http://)${networkIP} (${getNetworkIP()})`);
 
 const server = http.createServer(async (req, res) => {
