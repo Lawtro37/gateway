@@ -318,6 +318,9 @@ const server = https.createServer(async (req, res) => {
                 // Handle srcset attribute
                 return `${p1}="${p2.split(',').map(src => {
                     const [url, descriptor] = src.trim().split(' ');
+                    if (url.endsWith('.png') || url.endsWith('.jpeg')) {
+                        return `${url} ${descriptor}`;
+                    }
                     if (url.startsWith('http') || url.startsWith('https') || url.startsWith('//')) {
                         const absoluteUrl = url.startsWith('//') ? `http:${url}` : url;
                         return `https://${networkIP}/${absoluteUrl} ${descriptor}`;
@@ -326,15 +329,16 @@ const server = https.createServer(async (req, res) => {
                     return `https://${networkIP}/${baseUrl + relativeUrl} ${descriptor}`;
                 }).join(', ')}"`;
             } else {
+                if (p2.endsWith('.png') || p2.endsWith('.jpeg')) {
+                    return match;
+                }
                 if (p2.startsWith('http') || p2.startsWith('https') || p2.startsWith('//')) {
                     // Rewrite absolute URLs
                     const absoluteUrl = p2.startsWith('//') ? `http:${p2}` : p2;
-                    //console.log(`${p1}="http://${networkIP}:3000/${absoluteUrl}"`);
                     return `${p1}="https://${networkIP}/${absoluteUrl}"`;
                 }
                 // Rewrite relative URLs
                 const relativeUrl = p2.startsWith('/') ? p2 : `/${p2}`;
-                //console.log(`${p1}="http://${networkIP}:3000/${baseUrl + relativeUrl}"`);
                 return `${p1}="https://${networkIP}/${baseUrl + relativeUrl}"`;
             }
         });
@@ -342,6 +346,9 @@ const server = https.createServer(async (req, res) => {
         // Handle <style> tags
         modifiedHtml = modifiedHtml.replace(/<style[^>]*>([\s\S]*?)<\/style>/gi, (match, cssContent) => {
             let modifiedCss = cssContent.replace(/url\(['"]?([^'")]+)['"]?\)/g, (match, p1) => {
+                if (p1.endsWith('.png') || p1.endsWith('.jpeg')) {
+                    return match;
+                }
                 if (p1.startsWith('http') || p1.startsWith('https') || p1.startsWith('//')) {
                     // Rewrite absolute URLs
                     const absoluteUrl = p1.startsWith('//') ? `http:${p1}` : p1;
@@ -357,6 +364,9 @@ const server = https.createServer(async (req, res) => {
         // Handle style attributes
         modifiedHtml = modifiedHtml.replace(/style=['"]([^'"]*)['"]/gi, (match, styleContent) => {
             let modifiedStyle = styleContent.replace(/url\(['"]?([^'")]+)['"]?\)/g, (match, p1) => {
+                if (p1.endsWith('.png') || p1.endsWith('.jpeg')) {
+                    return match;
+                }
                 if (p1.startsWith('http') || p1.startsWith('https') || p1.startsWith('//')) {
                     // Rewrite absolute URLs
                     const absoluteUrl = p1.startsWith('//') ? `http:${p1}` : p1;
