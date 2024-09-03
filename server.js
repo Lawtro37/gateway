@@ -318,7 +318,7 @@ const server = http.createServer(async (req, res) => {
                 // Handle srcset attribute
                 return `${p1}="${p2.split(',').map(src => {
                     const [url, descriptor] = src.trim().split(' ');
-                    if (url.endsWith('.png') || url.endsWith('.jpeg')) {
+                    if (url.endsWith('.png') || url.endsWith('.jpeg') || url.endsWith('.gif')) {
                         return `${url} ${descriptor}`;
                     }
                     if (url.startsWith('http') || url.startsWith('https') || url.startsWith('//')) {
@@ -329,7 +329,7 @@ const server = http.createServer(async (req, res) => {
                     return `https://${networkIP}/${baseUrl + relativeUrl} ${descriptor}`;
                 }).join(', ')}"`;
             } else {
-                if (p2.endsWith('.png') || p2.endsWith('.jpeg')) {
+                if (p2.endsWith('.png') || p2.endsWith('.jpeg') || url.endsWith('.gif')) {
                     return match;
                 }
                 if (p2.startsWith('http') || p2.startsWith('https') || p2.startsWith('//')) {
