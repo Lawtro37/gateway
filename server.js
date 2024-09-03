@@ -56,7 +56,7 @@ function getNetworkIP() {
     return '127.0.0.1'; // Fallback to localhost if no external IP is found
 }
 
-const networkIP = "https://gateway-2g0m.onrender.com";
+const networkIP = "https://gateway.lawtrostudios.com";
 console.log(`Server IP address: ${networkIP} (${getNetworkIP()})`);
 
 const server = https.createServer(async (req, res) => {
@@ -66,7 +66,7 @@ const server = https.createServer(async (req, res) => {
         res.end();
         return;
     }
-    if(req.url === 'https://gateway-2g0m.onrender.com') {
+    if(req.url === 'https://gateway.lawtrostudios.com') {
         return;
     }
     if (req.url === '/' || req.url === '/fetch') {
