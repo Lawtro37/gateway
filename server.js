@@ -336,6 +336,7 @@ const server = http.createServer(async (req, res) => {
                     return `${p1}="https://${networkIP}/${absoluteUrl}"`;
                 }
                 // Rewrite relative URLs
+                const [url2, fileType] = src.trim().split('.');
                 const relativeUrl = p2.startsWith('/') ? p2 : `/${p2}`;
                 if(fileType == '.png' || fileType == '.jpg' || fileType == '.jpeg' || fileType == '.gif' || fileType == '.webp' || fileType == '.ico') {
                     return `https://${baseUrl + relativeUrl}`;
