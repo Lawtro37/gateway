@@ -354,6 +354,7 @@ const server = http.createServer(async (req, res) => {
                 }
                 // Rewrite relative URLs
                 const relativeUrl = p1.startsWith('/') ? p1 : `/${p1}`;
+                const [url2, fileType] = src.trim().split('.');
                 if(fileType == '.png' || fileType == '.jpg' || fileType == '.jpeg' || fileType == '.gif' || fileType == '.webp' || fileType == '.ico') {
                     return `https://${baseUrl + relativeUrl}`;
                 }
@@ -372,6 +373,7 @@ const server = http.createServer(async (req, res) => {
                 }
                 // Rewrite relative URLs
                 const relativeUrl = p1.startsWith('/') ? p1 : `/${p1}`;
+                const [url2, fileType] = src.trim().split('.');
                 if(fileType == '.png' || fileType == '.jpg' || fileType == '.jpeg' || fileType == '.gif' || fileType == '.webp' || fileType == '.ico') {
                     return `https://${baseUrl + relativeUrl}`;
                 }
