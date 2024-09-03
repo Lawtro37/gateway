@@ -468,11 +468,11 @@ const server = https.createServer(async (req, res) => {
 });
 
 server.listen(10000, () => {
-    console.log(`Server is listening on port 10000 and IP address ${networkIP}`);
+    console.log(`Server is listening on port 10000 and IP address ${networkIP} at ${new Date().toLocaleString()}`);
 });
 
 process.on('uncaughtException', (err) => {
-    console.error('FAITAL ERROR: ', err);
+    console.error('FAITAL ERROR: ', err, " | at ", new Date().toLocaleString());
     errorLog.push(err);
     // Append error log to file
     fs.appendFile(path.join(logsDir, `FAITAL_ERROR_errorLog - ${Date.now()}.json`), JSON.stringify(errorLog), (err) => {
