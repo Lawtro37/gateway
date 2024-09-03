@@ -467,8 +467,8 @@ const server = https.createServer(async (req, res) => {
     }//}
 });
 
-server.listen(10000, () => {
-    console.log(`Server is listening on port 10000 and IP address ${networkIP} at ${new Date().toLocaleString()}`);
+server.listen(process.eventNames.PORT || 10000, () => {
+    console.log(`Server is listening on port 10000 and IP address ${process.eventNames.PORT || 10000} at ${new Date().toLocaleString()}`);
 });
 
 process.on('uncaughtException', (err) => {
