@@ -391,20 +391,24 @@ const server = http.createServer(async (req, res) => {
             return;
         }
     } catch (error) {
-        errors.push({error: error, ip: ip, site: req.url.slice(1)});
+        errors.push({ error: error, ip: ip, site: req.url.slice(1) });
         errorLog.push(error);
 
         // Log the error for debugging purposes
-        console.error('Error occurred:', error.message);
+        console.error('Error occurred:', error.message + " on " + errorLine);
+
+        // Extract the line number from the error stack
+        const errorLine = error.stack.split('\n')[1].trim();
 
         // Set the response status code and headers
-        //if(!headersSent) {
-        //res.writeHead(500, { 'Content-Type': 'text/html' });
+        // if (!headersSent) {
+        //     res.writeHead(500, { 'Content-Type': 'text/html' });
 
         // Generate the HTML for all errors
         const errorDetailsHtml = errors.map((err, index) => `
             <div class="error-item">
-                <pre>${error.message}</pre>
+                <pre>${err.error.message}</pre>
+                <pre>Line: ${err.error.stack.split('\n')[1].trim()}</pre>
             </div>
         `).join('');
 
