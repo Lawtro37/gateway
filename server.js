@@ -203,14 +203,14 @@ const server = http.createServer(async (req, res) => {
                 // Check if the match is inside a replace function
                 const beforeMatch = string.slice(0, offset);
                 const isInReplaceFunction = /replace\s*\(\s*['"]/.test(beforeMatch);
-        
+
                 if (isInReplaceFunction) {
                     return match; // Do not modify if inside a replace function
                 }
-        
+
                 let rewrittenUrl;
-                if (p2.startsWith('http') || p2.startsWith('https') || p2.startsWith('//')) {
-                    // Rewrite absolute URLs
+                if ((p2.startsWith('http') || p2.startsWith('https')) && p2.length > 8) {
+                    // Rewrite absolute URLs only if there is something after http or https
                     const absoluteUrl = p2.startsWith('//') ? `http:${p2}` : p2;
                     rewrittenUrl = `https://${networkIP}/${absoluteUrl}`;
                 } else {
@@ -329,7 +329,7 @@ const server = http.createServer(async (req, res) => {
                         }
                         return `${url} ${descriptor}`;
                     }
-                    if (url.startsWith('http') || url.startsWith('https') || url.startsWith('//')) {
+                    if ((url.startsWith('http') || url.startsWith('https') || url.startsWith('//')) && url.length > 8) {
                         const absoluteUrl = url.startsWith('//') ? `http:${url}` : url;
                         return `https://${networkIP}/${absoluteUrl} ${descriptor}`;
                     }
@@ -345,8 +345,8 @@ const server = http.createServer(async (req, res) => {
                     }
                     return match;
                 }
-                if (p2.startsWith('http') || p2.startsWith('https') || p2.startsWith('//')) {
-                    // Rewrite absolute URLs
+                if ((p2.startsWith('http') || p2.startsWith('https') || p2.startsWith('//')) && p2.length > 8) {
+                    // Rewrite absolute URLs only if there is something after http or https
                     const absoluteUrl = p2.startsWith('//') ? `http:${p2}` : p2;
                     return `${p1}="https://${networkIP}/${absoluteUrl}"`;
                 }
@@ -360,6 +360,9 @@ const server = http.createServer(async (req, res) => {
         modifiedHtml = modifiedHtml.replace(/<style[^>]*>([\s\S]*?)<\/style>/gi, (match, cssContent) => {
             let modifiedCss = cssContent.replace(/url\(['"]?([^'")]+)['"]?\)/g, (match, p1) => {
                 if (p1.endsWith('.png') || p1.endsWith('.jpg') || p1.endsWith('.jpeg') || p1.endsWith('.gif') || p1.endsWith('.webp') || p1.endsWith('.ico') || p1.startsWith('data:image')) {
+                    if (p1 === 'data:image/gif;base64,R0lGODlhAQABAIAAAP///////yH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==') {
+                        return match;
+                    }
                     if (!p1.startsWith('http') && !p1.startsWith('https') && !p1.startsWith('data:image')) {
                         // Make relative URLs absolute
                         const absoluteUrl = p1.startsWith('/') ? `${baseUrl}${p1}` : `${baseUrl}/${p1}`;
@@ -367,8 +370,8 @@ const server = http.createServer(async (req, res) => {
                     }
                     return match;
                 }
-                if (p1.startsWith('http') || p1.startsWith('https') || p1.startsWith('//')) {
-                    // Rewrite absolute URLs
+                if ((p1.startsWith('http') || p1.startsWith('https') || p1.startsWith('//')) && p1.length > 8) {
+                    // Rewrite absolute URLs only if there is something after http or https
                     const absoluteUrl = p1.startsWith('//') ? `http:${p1}` : p1;
                     return `url(https://${networkIP}/${absoluteUrl})`;
                 }
@@ -383,6 +386,9 @@ const server = http.createServer(async (req, res) => {
         modifiedHtml = modifiedHtml.replace(/style=['"]([^'"]*)['"]/gi, (match, styleContent) => {
             let modifiedStyle = styleContent.replace(/url\(['"]?([^'")]+)['"]?\)/g, (match, p1) => {
                 if (p1.endsWith('.png') || p1.endsWith('.jpg') || p1.endsWith('.jpeg') || p1.endsWith('.gif') || p1.endsWith('.webp') || p1.endsWith('.ico') || p1.startsWith('data:image')) {
+                    if (p1 === 'data:image/gif;base64,R0lGODlhAQABAIAAAP///////yH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==') {
+                        return match;
+                    }
                     if (!p1.startsWith('http') && !p1.startsWith('https') && !p1.startsWith('data:image')) {
                         // Make relative URLs absolute
                         const absoluteUrl = p1.startsWith('/') ? `${baseUrl}${p1}` : `${baseUrl}/${p1}`;
@@ -390,8 +396,8 @@ const server = http.createServer(async (req, res) => {
                     }
                     return match;
                 }
-                if (p1.startsWith('http') || p1.startsWith('https') || p1.startsWith('//')) {
-                    // Rewrite absolute URLs
+                if ((p1.startsWith('http') || p1.startsWith('https') || p1.startsWith('//')) && p1.length > 8) {
+                    // Rewrite absolute URLs only if there is something after http or https
                     const absoluteUrl = p1.startsWith('//') ? `http:${p1}` : p1;
                     return `url(https://${networkIP}/${absoluteUrl})`;
                 }
@@ -402,7 +408,6 @@ const server = http.createServer(async (req, res) => {
             return `style="${modifiedStyle}"`;
         });
 
-        // Set the response headers
         // Set the response headers
         if (!headersSent) {
             res.writeHead(200, {
