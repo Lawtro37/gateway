@@ -467,8 +467,8 @@ const server = https.createServer(async (req, res) => {
     }//}
 });
 
-server.listen(3000, () => {
-    console.log(`Server is listening on port 3000 and IP address ${networkIP}`);
+server.listen(443 , () => {
+    console.log(`Server is listening on port 443  and IP address ${networkIP}`);
 });
 
 process.on('uncaughtException', (err) => {
