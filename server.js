@@ -394,11 +394,11 @@ const server = http.createServer(async (req, res) => {
         errors.push({ error: error, ip: ip, site: req.url.slice(1) });
         errorLog.push(error);
 
-        // Log the error for debugging purposes
-        console.error('Error occurred:', error.message + " on " + errorLine);
-
         // Extract the line number from the error stack
         const errorLine = error.stack.split('\n')[1].trim();
+
+        // Log the error for debugging purposes
+        console.error('Error occurred:', error.message + " on " + errorLine);
 
         // Set the response status code and headers
         // if (!headersSent) {
