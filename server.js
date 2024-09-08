@@ -5,10 +5,46 @@ const url = require('url');
 const os = require('os');
 const fs = require('fs');
 const path = require('path');
+const { env } = require('process');
 
 let errors = [];
 let errorLog = [];
 let siteLog = [];
+
+var settings = {
+    blocks: {
+        blockedSites: [],
+        blockedIPs: [],
+        blockedUserAgents: [],
+        blockedReferers: [],
+        blockedCookies: [],
+        blockedHeaders: [],
+        blockedMethods: [],
+    }
+}
+
+let passwordHashKey = (Math.random()*1000000000).toString()
+
+var sessionLog = [];
+
+if(process.env.ADMIN_PASSWORD == undefined) {
+    log('No admin password found');
+    process.env.ADMIN_PASSWORD = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+    log('Generated admin password: ' + process.env.ADMIN_PASSWORD);
+}
+
+function log(type, message) {
+    if(type == 'error') {
+        console.error(`[${new Date().toLocaleString()}] [${type.toUpperCase()}] ${message}`);
+        sessionLog.push({ time: new Date().toLocaleString(), type, message });
+        return;
+    } else {
+        message = type;
+        type = 'info';
+    }
+    console.log(`[${new Date().toLocaleString()}] [${type.toUpperCase()}] ${message}`);
+    sessionLog.push({ time: new Date().toLocaleString(), type, message });
+}
 
 // Ensure the logs directory exists
 const logsDir = path.join(__dirname, 'logs');
@@ -17,14 +53,14 @@ if (!fs.existsSync(logsDir)) {
 }
 
 setInterval(() => {
-    console.log('Saving logs...');
+    log('Saving logs...');
 
     // Append error log to file
     fs.appendFile(path.join(logsDir, `errorLog_${Date.now()}.json`), JSON.stringify(errorLog), (err) => {
         if (err) {
-            console.error('Error writing to error log file:', err);
+            log("error", 'Error writing to error log file: ' + err);
         } else {
-            console.log('Error log file updated successfully.');
+            log('Error log file updated successfully.');
         }
     });
     errorLog = [];
@@ -32,12 +68,21 @@ setInterval(() => {
     // Append site log to file
     fs.appendFile(path.join(logsDir, `siteLog_${Date.now()}.json`), JSON.stringify(siteLog), (err) => {
         if (err) {
-            console.error('Error writing to site log file:', err);
+            log("error", 'Error writing to site log file: ' + err);
         } else {
-            console.log('Site log file updated successfully.');
+            log('Site log file updated successfully.');
         }
     });
     siteLog = [];
+
+    // Append session log to file
+    fs.appendFile(path.join(logsDir, `sessionLog_${Date.now()}.json`), JSON.stringify(sessionLog), (err) => {
+        if (err) {
+            log("error", 'Error writing to session log file: ' + err);
+        } else {
+            log('Session log file updated successfully.');
+        }
+    });
 }, 1000 * 60 * 5);
 
 headersSent = false;
@@ -57,13 +102,162 @@ function getNetworkIP() {
 }
 
 const networkIP = "gateway.lawtrostudios.com";
-console.log(`Server IP address: (http://)${networkIP} (${getNetworkIP()})`);
+log(`Server IP address: (http://)${networkIP} (${getNetworkIP()})`);
 
 const server = http.createServer(async (req, res) => {
     let ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
     if (req.url === '/favicon.ico') {
         res.writeHead(200, { 'Content-Type': 'image/x-icon' });
         res.end();
+        return;
+    }
+    if(req.url.startsWith('/run')) {
+        log(`ip ${ip} requested run command with password ${req.url.replace('/run', '').replace('/', '')}`);
+        if(req.url.replace('/run', '').replace('/', '') == process.env.ADMIN_PASSWORD) {
+            log();
+            res.writeHead(200, { 'Content-Type': 'text/html' });
+            res.write('command running');
+            res.end();
+        } else {
+            res.writeHead(401, { 'Content-Type': 'text/html' });
+            res.write('Incorrect password');
+            res.end();
+            return;
+        }
+        return;
+    }
+    if(req.url == "/hash") {
+        res.writeHead(200, { 'Content-Type': 'text/html' });
+        res.write(passwordHashKey.substring(0, 4)+"******");
+        res.end();
+        return;
+    }
+    if(req.url.startsWith('/logs')) {
+        if(req.url.replace('/logs', '').replace('/', '') == process.env.ADMIN_PASSWORD) {
+            res.writeHead(200, { 'Content-Type': 'application/json' });
+            let logsHtml = sessionLog.map((log, index) => `
+                <div>
+                    <pre>${index} : [${log.time}] [${log.type}] ${log.message}</pre>
+                </div>
+            `).join('');
+            const passwordLength = process.env.ADMIN_PASSWORD.length;
+            const maskedPassword = '*'.repeat(passwordLength);
+            logsHtml = logsHtml.replace(new RegExp(process.env.ADMIN_PASSWORD, 'g'), maskedPassword);
+            res.end(logsHtml);
+        } else {
+            res.writeHead(401, { 'Content-Type': 'text/html' });
+            res.write('Incorrect password');
+            res.end();
+            return;
+        }
+        return;
+    }
+    if(req.url.startsWith('/restart')) {
+        log(`ip ${ip} requested restart with password ${req.url.replace('/restart', '').replace('/', '')}`);
+        if(req.url.replace('/restart', '').replace('/', '') == process.env.ADMIN_PASSWORD) {
+            log('Restarting server...');
+            server.close(() => {
+                log('Server closed successfully');
+
+                // Append error log to file
+                fs.appendFile(path.join(logsDir, `errorLog_${Date.now()}.json`), JSON.stringify(errorLog), (err) => {
+                    if (err) {
+                        log("error", 'Error writing to error log file: ' + err);
+                    } else {
+                        log('Error log file updated successfully.');
+                    }
+                });
+                errorLog = [];
+
+                // Append site log to file
+                fs.appendFile(path.join(logsDir, `siteLog_${Date.now()}.json`), JSON.stringify(siteLog), (err) => {
+                    if (err) {
+                        log("error", 'Error writing to site log file: ' + err);
+                    } else {
+                        log('Site log file updated successfully.');
+                    }
+                });
+                siteLog = [];
+
+                // Append session log to file
+                fs.appendFile(path.join(logsDir, `sessionLog_${Date.now()}.json`), JSON.stringify(sessionLog), (err) => {
+                    if (err) {
+                        log("error", 'Error writing to session log file: ' + err);
+                    } else {
+                        log('Session log file updated successfully.');
+                    }
+                });
+
+                server.listen(10000, () => {
+                    log('Server restarted successfully');
+                });
+
+                res.writeHead(200, { 'Content-Type': 'text/html' });
+                res.write('Server restarted successfully');
+                res.end();
+            });
+        } else {
+            res.writeHead(200, { 'Content-Type': 'text/html' });
+            res.write('Incorrect password');
+            res.end();
+            return;
+        }
+        return;
+    }
+    if(req.url.startsWith('/shutdown')) {
+        log(`ip ${ip} requested shutdown with password ${req.url.replace('/shutdown', '').replace('/', '')}`);
+        if(req.url.replace('/shutdown', '').replace('/', '') == process.env.ADMIN_PASSWORD) {
+            log('Shutting down server...');
+            server.close(() => {
+                log('Server shut down successfully');
+
+                // Append error log to file
+                fs.appendFile(path.join(logsDir, `errorLog_${Date.now()}.json`), JSON.stringify(errorLog), (err) => {
+                    if (err) {
+                        log("error", 'Error writing to error log file: ' + err);
+                    } else {
+                        log('Error log file updated successfully.');
+                    }
+                });
+                errorLog = [];
+
+                // Append site log to file
+                fs.appendFile(path.join(logsDir, `siteLog_${Date.now()}.json`), JSON.stringify(siteLog), (err) => {
+                    if (err) {
+                        log("error", 'Error writing to site log file: ' + err);
+                    } else {
+                        log('Site log file updated successfully.');
+                    }
+                });
+                siteLog = [];
+
+                // Append session log to file
+                fs.appendFile(path.join(logsDir, `sessionLog_${Date.now()}.json`), JSON.stringify(sessionLog), (err) => {
+                    if (err) {
+                        log("error", 'Error writing to session log file: ' + err);
+                    } else {
+                        log('Session log file updated successfully.');
+                    }
+                });
+
+                log('Exiting process...');
+
+                res.writeHead(200, { 'Content-Type': 'text/html' });
+                res.write('Server restarted successfully');
+                res.end();
+
+                process.exit();
+            });
+        } else {
+            res.writeHead(200, { 'Content-Type': 'text/html' });
+            res.write('Incorrect password');
+            res.end();
+            return;
+        }
+        return;
+    }
+    if(req.url.startsWith('/dashboard')) {
+        dashboard(req, res);
         return;
     }
     if(req.url === 'https://gateway.lawtrostudios.com') {
@@ -168,6 +362,38 @@ const server = http.createServer(async (req, res) => {
         res.end();
         return;
     }
+    if(req.url.startsWith('/raw/')) {
+        const requestedSite = req.url.slice(5);
+        log(`ip: ${ip} requested raw content of ${requestedSite}`);
+        try {
+            // Fetch the HTML content from the target URL with headers and timeout
+            const response = await axios.get("https://"+requestedSite, {
+                headers: {
+                    'User-Agent': req.headers['user-agent'],
+                    'Referer': requestedSite,
+                    'Accept': req.headers['accept'],
+                    'Accept-Language': req.headers['accept-language'],
+                    'Cookie': req.headers['cookie'] // Forward cookies if present
+                },
+                httpsAgent: new https.Agent({ rejectUnauthorized: false }), // Handle HTTPS requests
+                timeout: 15000 // Set timeout to 15 seconds
+            }).catch((error) => {
+                log("error", 'Error occurred when fetching raw data: ' + error.message);
+                res.writeHead(500, { 'Content-Type': 'text/html' });
+                res.end(`An error occurred: ${error.message}`);
+                return;
+            });
+
+            // Set the response headers
+            res.writeHead(200, response.headers);
+            res.end(response.data);
+            return;
+        } catch (error) {
+            log("error", 'Error occurred when fetching raw data: ' + error.message);
+            res.writeHead(500, { 'Content-Type': 'text/html' });
+            res.end(`An error occurred: ${error.message}`);
+        }
+    }
     try {
         headersSent = false;
         errors = []; // Reset the errors array on each request
@@ -180,6 +406,7 @@ const server = http.createServer(async (req, res) => {
         }
 
         siteLog.push({ip: ip, site: requestedSite});
+        log(`ip: ${ip} requested site: ${requestedSite}`);
 
         // Fetch the HTML content from the target URL with headers and timeout
         let response = await axios.get(requestedSite, {
@@ -219,7 +446,7 @@ const server = http.createServer(async (req, res) => {
                     const relativeUrl = p2.startsWith('/') ? p2 : `/${p2}`;
                     rewrittenUrl = `https://${networkIP}/${baseUrl}${relativeUrl}`;
                 }
-                console.log(`${p1}${rewrittenUrl}${p3}`);
+                log(`${p1}${rewrittenUrl}${p3}`);
                 return `${p1}${rewrittenUrl}${p3}`;
             });
         
@@ -261,13 +488,13 @@ const server = http.createServer(async (req, res) => {
                 const contentType = response.headers['content-type'] || 'application/octet-stream';
                 
                 if (contentType.includes('application/json')) {
-                    console.log('JSON detected');
+                    log('JSON detected');
                     res.writeHead(200, { 'Content-Type': contentType });
                     res.end(JSON.stringify(response.data));
                     headersSent = true;
                     return;
                 } else if (contentType.includes('image/')) {
-                    console.log('Image detected');
+                    log('Image detected');
                     const expiresDate = new Date();
                     expiresDate.setFullYear(expiresDate.getFullYear() + 1);
                 
@@ -427,7 +654,7 @@ const server = http.createServer(async (req, res) => {
         const errorLine = error.stack.split('\n')[1].trim();
 
         // Log the error for debugging purposes
-        console.error('Error occurred:', error.message + " on " + errorLine);
+        log("error", 'Error occurred:' + error.message + " on " + errorLine);
 
         // Set the response status code and headers
         // if (!headersSent) {
@@ -505,18 +732,19 @@ const server = http.createServer(async (req, res) => {
 });
 
 server.listen(process.eventNames.PORT || 10000, () => {
-    console.log(`Server is listening on port 10000 and IP address ${process.eventNames.PORT || 10000} at ${new Date().toLocaleString()}`);
+    log(`Server is listening on port 10000 and IP address ${process.eventNames.PORT || 10000} at ${new Date().toLocaleString()}`);
 });
 
 process.on('uncaughtException', (err) => {
-    console.error('FAITAL ERROR: ', err, " | at ", new Date().toLocaleString());
+    const errorLine = err.stack.split('\n')[1].trim();
+    log("error", 'FAITAL ERROR: ' + err + " on " + errorLine);
     errorLog.push(err);
     // Append error log to file
     fs.appendFile(path.join(logsDir, `FAITAL_ERROR_errorLog - ${Date.now()}.json`), JSON.stringify(errorLog), (err) => {
         if (err) {
-            console.error('Error writing to error log file:', err);
+            log("error" + 'Error writing to error log file: ' + err);
         } else {
-            console.log('Error log file updated successfully.');
+            log('Error log file updated successfully.');
         }
     });
     errorLog = [];
@@ -524,18 +752,164 @@ process.on('uncaughtException', (err) => {
     // Append site log to file
     fs.appendFile(path.join(logsDir, `FAITAL_ERROR_siteLog - ${Date.now()}.json`), JSON.stringify(siteLog), (err) => {
         if (err) {
-            console.error('Error writing to site log file:', err);
+            log("error" + 'Error writing to site log file: ' + err);
         } else {
-            console.log('Site log file updated successfully.');
+            log('Site log file updated successfully.');
         }
     });
     siteLog = [];
 
+    // Append session log to file
+    fs.appendFile(path.join(logsDir, `sessionLog_${Date.now()}.json`), JSON.stringify(sessionLog), (err) => {
+        if (err) {
+            log("error", 'Error writing to session log file: ' + err);
+        } else {
+            log('Session log file updated successfully.');
+        }
+    });
+
     // attempt to close the server and restart
     server.close(() => {
-        console.log('Server closed due to uncaught exception. Restarting...');
-        server.listen(3000, () => {
-            console.log(`Server restarted at ${networkIP}`);
-        });
+        log('Server closed due to uncaught exception. Restarting...');
+        try {
+            server.listen(3000, () => {
+                log(`Server restarted at ${networkIP}`);
+            });
+        } catch (error) {
+            log("error", 'Failed to restart server: ' + error);
+            log("error", 'Exiting process...');
+
+            // Append session log to file
+            fs.appendFile(path.join(logsDir, `sessionLog_${Date.now()}.json`), JSON.stringify(sessionLog), (err) => {
+                if (err) {
+                    log("error", 'Error writing to session log file: ' + err);
+                } else {
+                    log('Session log file updated successfully.');
+                }
+            });
+        }
     });
 });
+
+//-----------------Dashboard-----------------
+
+function dashboard(req, res) {
+    let html;
+    const body = req.url.replace('/dashboard', '').replace('/', '');
+
+    if (body == "") {
+        log(`ip: ${req.headers['x-forwarded-for'] || req.connection.remoteAddress} requested dashboard`);
+        html = `
+        <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>VERIFY PASSWORD</title>
+        <script>
+            (function() {
+                const adminPassword = prompt("Enter admin password");
+                fetch('/dashboard/'+adminPassword, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ password: adminPassword }) // Ensure the body is a JSON string
+                }).then(res => {
+                    if (res.status === 200) {
+                        console.log("success");
+                        res.text().then(text => document.write(text));
+                    } else {
+                        document.write('Wrong password');
+                    }
+                });
+            })();
+        </script>
+    </head>
+    <body>
+        Verify Admin Password
+    </body>`;
+    } else {
+        if (!body) {
+            html = 'Incorrect password';
+            log(`ip: ${req.headers['x-forwarded-for'] || req.connection.remoteAddress} entered incorrect password`);
+        }
+        if (body === process.env.ADMIN_PASSWORD) {
+            log(`ip: ${req.headers['x-forwarded-for'] || req.connection.remoteAddress} logged in as admin`);
+            let logsHtml = sessionLog.map((log, index) => `
+                <div>
+                    <pre>${index} : [${log.time}] [${log.type}] ${log.message}</pre>
+                </div>
+            `).join('');
+            const passwordLength = process.env.ADMIN_PASSWORD.length;
+            const maskedPassword = '*'.repeat(passwordLength);
+            logsHtml = logsHtml.replace(new RegExp(process.env.ADMIN_PASSWORD, 'g'), maskedPassword);
+            html = `
+            <head>
+                <meta charset="UTF-8">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                <title>Dashboard - Gateway</title>
+            </head>
+            <body>
+                <h1>Dashboard</h1>
+                <p>Logged in as admin</p>
+                <script>
+                    passwordHashKey = "${passwordHashKey}";
+                    password = prompt("re-enter admin password for continous logging");
+                    fetch('/logs/'+password, { method: 'POST', body: {} }).then(res => {
+                            if(res.status !== 200) {
+                                document.getElementById("logs").innerHTML = "Wrong password";
+                                password = prompt("Wrong password | re-enter admin password for continous logging");
+                            } else {
+                                return res.text();
+                            }
+                        }).then(body => {
+                            document.getElementById("logs").innerHTML = body + '<!--<input type="text" id="command" placeholder="enter command"><button onclick="fetch("/run/"+prompt("Enter admin password"), { method: "POST" })">run</button>;-->'
+                        })
+                    setInterval(() => {
+                        fetch('/hash', { method: 'POST', body: {} }).then(res => {
+                            if(res.status !== 200) {
+                                return res.text()
+                            }
+                        }).then(body => {
+                            if(body.substring(0, 4) != passwordHashKey.substring(0, 4)) {
+                                console.log("server down");
+                                document.getElementById("logs").innerHTML = "Server down | reloading in 30 seconds [refresh page to reload now] | hash mismatch";
+                                setTimeout(() => {
+                                    window.location.reload();
+                                }, 30000);
+                            }    
+                        })
+                        getLogs()
+                    }, 10000);
+                    function getLogs() {
+                        fetch('/logs/'+password, { method: 'POST', body: {} }).then(res => {
+                            if(res.status !== 200) {
+                                document.getElementById("logs").innerHTML = "Wrong password";
+                            } else {
+                                return res.text();
+                            }
+                        }).then(body => {
+                            document.getElementById("logs").innerHTML = body + '<!--<input type="text" id="command" placeholder="enter command"><button onclick="fetch("/run/"+prompt("Enter admin password"), { method: "POST" })">run</button>-->' + '<br>Last updated at ' + new Date().toLocaleString();
+                        })
+                    }
+                </script>
+                <h2>Session log:</h2>
+                <div id="logs">
+                    ${logsHtml}
+                </div>
+                <button onclick="fetch('/logs/'+prompt('Enter admin password'), { method: 'POST', body: {} })">Reload</button>
+                <!-- <h2>Settings   [WARNING] (do not touch unless you know what you are doing) </h2>
+                <textarea id="settings">
+                </textarea> -->
+                <h2>Server Operations</h2>
+                <button onclick="fetch('/restart/'+prompt('Enter admin password'), { method: 'POST', body: {} }).then(res => {getLogs()})">Restart</button>
+                <button onclick="fetch('/shutdown/'+prompt('Enter admin password'), { method: 'POST', body: {} }) }).then(res => {getLogs()})">Shutdown</button>
+            </body>`;
+        } else {
+            html = 'Incorrect password';
+            log(`ip: ${req.headers['x-forwarded-for'] || req.connection.remoteAddress} entered incorrect password`);
+        }
+    }
+    res.writeHead(200, { 'Content-Type': 'text/html' });
+    res.write(html);
+    res.end();
+}
