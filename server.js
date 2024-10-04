@@ -7,7 +7,7 @@ const fs = require('fs');
 const path = require('path');
 const { env } = require('process');
 
-const GOOGLE_SAFE_BROWSING_API_KEY = process.env.SAFE_API // Replace with your actual API key
+const GOOGLE_SAFE_BROWSING_API_KEY = process.env.SAFE_API
 
 async function isUrlSafe(url) {
     const apiUrl = `https://safebrowsing.googleapis.com/v4/threatMatches:find?key=${GOOGLE_SAFE_BROWSING_API_KEY}`;
@@ -27,7 +27,7 @@ async function isUrlSafe(url) {
     };
 
     try {
-        const response = await axios.post(apiUrl, requestBody).then((response) => response).catch((error) => log("error", error.response);
+        const response = await axios.post(apiUrl, requestBody).then((response) => response).catch((error) => log("error", error.response));
         log(response.data);
         if (response.data.matches) {
             log("error", 'URL is unsafe:', url);
