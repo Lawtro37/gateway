@@ -30,7 +30,7 @@ async function isUrlSafe(url) {
         const response = await axios.post(apiUrl, requestBody);
         return response.data.matches ? false : true;
     } catch (error) {
-        log("error", 'Error checking URL with Google Safe Browsing:', error);
+        log("error", 'Error checking URL with Google Safe Browsing:', error.message);
         return false; // Assume the URL is unsafe if there's an error
     }
 }
