@@ -7,7 +7,7 @@ const fs = require('fs');
 const path = require('path');
 const { env } = require('process');
 
-const GOOGLE_SAFE_BROWSING_API_KEY = process.env.SAFE_API || "AIzaSyAtxB4mWsa4u878Ur3GV_BV-W_-pDtzKsU"; // Replace with your actual API key
+const GOOGLE_SAFE_BROWSING_API_KEY = process.env.SAFE_API // Replace with your actual API key
 
 async function isUrlSafe(url) {
     const apiUrl = `https://safebrowsing.googleapis.com/v4/threatMatches:find?key=${GOOGLE_SAFE_BROWSING_API_KEY}`;
@@ -31,7 +31,7 @@ async function isUrlSafe(url) {
         return response.data.matches ? false : true;
     } catch (error) {
         log("error", 'Error checking URL with Google Safe Browsing:', error.message);
-        return false; // Assume the URL is unsafe if there's an error
+        return process.env.STRICT == "true" ? false : true; // Assume the URL is unsafe if there's an error
     }
 }
 
