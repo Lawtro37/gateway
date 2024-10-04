@@ -134,7 +134,7 @@ log(`Server IP address: (http(s)://)${networkIP} (${getNetworkIP()})`);
 
 const server = http.createServer(async (req, res) => {
     let ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
-    if(!req.connection.encrypted) {
+    if(!req.connection.encrypted && process.env.FORCE_HTTPS == 'true') {
         res.writeHead(301, { 'Location': 'https://' + req.headers.host + req.url });
         res.end();
         return;
