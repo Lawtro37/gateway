@@ -366,7 +366,7 @@ const server = http.createServer(async (req, res) => {
         const requestedSite = req.url.slice(5);
         log(`ip: ${ip} requested raw content of ${requestedSite}`);
         try {
-            // Fetch the HTML content from the target URL with headers and timeout
+            // Fetch the HTML content from the target UaRL with headers and timeout
             const response = await axios.get("https://"+requestedSite, {
                 headers: {
                     'User-Agent': req.headers['user-agent'],
@@ -731,7 +731,7 @@ const server = http.createServer(async (req, res) => {
     }//}
 });
 
-server.listen(process.eventNames.PORT || 10000, () => {
+server.listen(process.eventNames.PORT || 443, () => {
     log(`Server is listening on port 10000 and IP address ${process.eventNames.PORT || 10000} at ${new Date().toLocaleString()}`);
 });
 
