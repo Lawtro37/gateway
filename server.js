@@ -144,7 +144,46 @@ const server = http.createServer(async (req, res) => {
     const isSafe = await isUrlSafe(req.url);
     if (!isSafe) {
         res.writeHead(403, { 'Content-Type': 'text/html' });
-        res.end('Access to this URL is blocked by Google Safe Browsing.');
+        res.end(`
+            <!DOCTYPE html>
+            <html lang="en">
+            <head>
+                <meta charset="UTF-8">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                <title>Blocked By Safe Brousing</title>
+                <style>
+                    body {
+                        font-family: Arial, sans-serif;
+                        background-color: #ff4d4d; /* Light red background */
+                        color: #fff; /* White text for readability */
+                        display: flex;
+                        justify-content: center;
+                        align-items: center;
+                        height: 100vh;
+                        margin: 0;
+                    }
+                    .container {
+                        background-color: #fff;
+                        padding: 20px;
+                        border-radius: 8px;
+                        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+                        text-align: center;
+                        color: #333; /* Dark text for the container */
+                    }
+                    h1 {
+                        margin-bottom: 20px;
+                        color: #ff4d4d; /* Light red color for the heading */
+                    }
+                </style>
+            </head>
+            <body>
+                <div class="container">
+                    <h1>Access Denied</h1>
+                    <p>The requested URL is unsafe and has been blocked.</p>
+                </div>
+            </body>
+            </html>
+            `);
         return;
     }
     if (req.url === '/favicon.ico') {
