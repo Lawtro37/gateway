@@ -7,6 +7,30 @@ const fs = require('fs');
 const path = require('path');
 const { env } = require('process');
 
+const GOOGLE_SAFE_BROWSING_API_KEY = process.env.SAFE_API || "AIzaSyAtxB4mWsa4u878Ur3GV_BV-W_-pDtzKsU"; // Replace with your actual API key
+
+async function isUrlSafe(url) {
+    const apiUrl = `https://safebrowsing.googleapis.com/v4/threatMatches:find?key=${GOOGLE_SAFE_BROWSING_API_KEY}`;
+    const requestBody = {
+        threatInfo: {
+            threatTypes: ["MALWARE", "SOCIAL_ENGINEERING", "UNWANTED_SOFTWARE", "POTENTIALLY_HARMFUL_APPLICATION", "THREAT_TYPE_UNSPECIFIED"],
+            platformTypes: ["ANY_PLATFORM"],
+            threatEntryTypes: ["URL"],
+            threatEntries: [
+                { url: url }
+            ]
+        }
+    };
+
+    try {
+        const response = await axios.post(apiUrl, requestBody);
+        return response.data.matches ? false : true;
+    } catch (error) {
+        log("error", 'Error checking URL with Google Safe Browsing:', error);
+        return false; // Assume the URL is unsafe if there's an error
+    }
+}
+
 let errors = [];
 let errorLog = [];
 let siteLog = [];
@@ -110,6 +134,55 @@ const server = http.createServer(async (req, res) => {
         res.writeHead(301, { 'Location': 'https://' + req.headers.host + req.url });
         res.end();
         return;
+    }
+    if(isUrlSafe(req.url)) {
+        res.writeHead(403, { 'Content-Type': 'text/html' });
+        res.write(`
+            <!DOCTYPE html>
+            <html lang="en">
+            <head>
+                <meta charset="UTF-8">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                <title>Blocked By Safe Brousing</title>
+                <style>
+                    body {
+                        font-family: Arial, sans-serif;
+                        background-color: #f8d7da; /* red */
+                        color: #721c24; /* red */
+                        margin: 0;
+                        padding: 0;
+                        display: flex;
+                        justify-content: center;
+                        align-items: center;
+                        height: 100vh;
+                        color: #721c24; /* red */
+                    }
+                    .container {
+                        text-align: center;
+                        background-color: #f8d7da;
+                        border: 1px solid #f5c6cb;
+                        padding: 20px;
+                        border-radius: 5px;
+                    }
+                    h1 {
+                        font-size: 2em;
+                        margin-bottom: 0.5em;
+                    }
+                    p {
+                        margin: 0.5em 0;
+                        color: #ffffff;
+                    }
+                </style>
+            </head>
+            <body>
+                <div class="container">
+                    <h1>Blocked By Safe Brousing</h1>
+                    <p>The requested URL is blocked by Safe Brousing.</p>
+                </div>
+            </body>
+            </html>
+            `);
+        res.end();
     }
     if (req.url === '/favicon.ico') {
         res.writeHead(200, { 'Content-Type': 'image/x-icon' });
