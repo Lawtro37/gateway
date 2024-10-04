@@ -102,10 +102,15 @@ function getNetworkIP() {
 }
 
 const networkIP = "gateway.lawtrostudios.com";
-log(`Server IP address: (http://)${networkIP} (${getNetworkIP()})`);
+log(`Server IP address: (http(s)://)${networkIP} (${getNetworkIP()})`);
 
 const server = http.createServer(async (req, res) => {
     let ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
+    if(!req.connection.encrypted) {
+        res.writeHead(301, { 'Location': 'https://' + req.headers.host + req.url });
+        res.end();
+        return;
+    }
     if (req.url === '/favicon.ico') {
         res.writeHead(200, { 'Content-Type': 'image/x-icon' });
         res.end();
@@ -732,7 +737,7 @@ const server = http.createServer(async (req, res) => {
 });
 
 server.listen(process.eventNames.PORT || 443, () => {
-    log(`Server is listening on port 10000 and IP address ${process.eventNames.PORT || 10000} at ${new Date().toLocaleString()}`);
+    log(`Server is listening on port ${process.eventNames.PORT || 443} and IP address ${process.eventNames.PORT || 443} at ${new Date().toLocaleString()}`);
 });
 
 process.on('uncaughtException', (err) => {
