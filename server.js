@@ -27,7 +27,7 @@ async function isUrlSafe(url) {
     };
 
     try {
-        const response = await axios.post(apiUrl, requestBody);
+        const response = await axios.post(apiUrl, requestBody).then((response) => response).catch((error) => log("error", error.response);
         log(response.data);
         if (response.data.matches) {
             log("error", 'URL is unsafe:', url);
