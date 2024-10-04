@@ -439,8 +439,106 @@ const server = http.createServer(async (req, res) => {
                             window.location.href = url;
                         });
                     </script>
+                    <h5> more info <a href="info">here</a> </h5>
                 </div>
                 <h5>Developed by <a href="https://LawtroStudios.com">Lawtro</a> 🙂👍</h5>
+            </body>
+            </html>
+        `);
+        res.end();
+        return;
+    }
+    if (req.url === '/info') {
+        res.writeHead(200, { 'Content-Type': 'text/html' });
+        res.write(`
+            <!DOCTYPE html>
+            <html lang="en">
+            <head>
+                <meta charset="UTF-8">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                <title>Gateway Info</title>
+                <style>
+                    body {
+                        font-family: Arial, sans-serif;
+                        background-color: #ff4d4d; /* Light red background */
+                        color: #fff; /* White text for readability */
+                        display: flex;
+                        justify-content: center;
+                        align-items: center;
+                        height: 100vh;
+                        margin: 0;
+                    }
+                    .container {
+                        background-color: #fff;
+                        padding: 20px;
+                        border-radius: 8px;
+                        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+                        text-align: center;
+                        color: #333; /* Dark text for the container */
+                    }
+                    h1 {
+                        margin-bottom: 20px;
+                        color: #ff4d4d; /* Light red color for the heading */
+                    }
+                    p {
+                        margin-bottom: 10px;
+                    }
+                    a {
+                        color: #007BFF;
+                        text-decoration: none;
+                    }
+                    a:hover {
+                        text-decoration: underline;
+                    }
+                </style>
+            </head>
+            <body>
+                <div class="container">
+                    <h1>Gateway Info</h1>
+                    <p>the gateway project is nasicly an unoffical proxy that routs trafith though it</p>
+                    <p>this allows you to bypass firewalls and other restrictions</p>
+                    <p>the gateway still has some restrictions and is not a vpn</p>
+                    <p>this is accomplished by fetching the content of the website and rewriting the urls to go through the makeshift proxy</p>
+                    <h2>Restrictions</h2>
+                    <p>the gateway has some restrictions to keep it safe</p>
+                    <p>these restrictions include:</p>
+                    <ul>
+                        <li>blocking unsafe websites</li>
+                        <li>blocking some websites</li>
+                        <li>blocking some IP addresses</li>
+                    </ul>
+                    <h3>temperary restrictions:</h3>
+                    <ul>
+                        <li>websockets are not currently suported</li>
+                        <li>the gateway does not support webRTC</li>
+                        <li>the gateway does not support live video playback</li>
+                        <li>the gateway does not support live audio playback</li>
+                        <li>the gateway is prone to error when changing js requests</li>
+                    </ul>
+                    <h2>Features</h2>
+                    <p>the gateway has some features to help you</p>
+                    <p>these features include:</p>
+                    <ul>
+                        <li>fetching websites</li>
+                        <li>fetching the raw content of websites using "/raw/..." in the url</li>
+                    </ul>
+                    <h2>Terms of Service</h2>
+                    <p>by using the gateway you agree to the terms of service</p>
+                    <p>the gateway is not responsible for any damage caused by the gateway</p>
+                    <p>the gateway is not responsible for any damage caused by the websites you visit</p>
+                    <p>the gateway reserves the right to block any website or IP address</p>
+                    <p>the gateway reserves the right to block any user IP address</p>
+                    <p>the gateway reserves change its policys at any time</p>
+                    <h2>Privacy Policy</h2>
+                    <p>the gateway ollects data such as visitated websites along with the chorisponding request ip along with any server side errors caused by requests</p>
+                    <p>the gateway does not collect any client side errors and/or logs</p>
+                    <p>the gateway does not collect any personal data</p>
+                    <p>the gateway does not collect any cookies</p>
+                    <p>the gateway does not collect any user agent data</p>
+                    <p>the gateway does not collect any referer data</p>
+                    <p>the gateway does not collect any request headers</p>
+                    <p>the gateway does not collect any request methods</p>
+                </div>
             </body>
             </html>
         `);
