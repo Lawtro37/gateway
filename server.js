@@ -74,6 +74,8 @@ function log(type, message) {
     sessionLog.push({ time: new Date().toLocaleString(), type, message });
 }
 
+log("Safe Browsing API Key: " + GOOGLE_SAFE_BROWSING_API_KEY);
+
 // Ensure the logs directory exists
 const logsDir = path.join(__dirname, 'logs');
 if (!fs.existsSync(logsDir)) {
@@ -139,54 +141,11 @@ const server = http.createServer(async (req, res) => {
         res.end();
         return;
     }
-    if(isUrlSafe(req.url)) {
+    const isSafe = await isUrlSafe(req.url);
+    if (!isSafe) {
         res.writeHead(403, { 'Content-Type': 'text/html' });
-        res.write(`
-            <!DOCTYPE html>
-            <html lang="en">
-            <head>
-                <meta charset="UTF-8">
-                <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                <title>Blocked By Safe Brousing</title>
-                <style>
-                    body {
-                        font-family: Arial, sans-serif;
-                        background-color: #f8d7da; /* red */
-                        color: #721c24; /* red */
-                        margin: 0;
-                        padding: 0;
-                        display: flex;
-                        justify-content: center;
-                        align-items: center;
-                        height: 100vh;
-                        color: #721c24; /* red */
-                    }
-                    .container {
-                        text-align: center;
-                        background-color: #f8d7da;
-                        border: 1px solid #f5c6cb;
-                        padding: 20px;
-                        border-radius: 5px;
-                    }
-                    h1 {
-                        font-size: 2em;
-                        margin-bottom: 0.5em;
-                    }
-                    p {
-                        margin: 0.5em 0;
-                        color: #ffffff;
-                    }
-                </style>
-            </head>
-            <body>
-                <div class="container">
-                    <h1>Blocked By Safe Brousing</h1>
-                    <p>The requested URL is blocked by Safe Brousing.</p>
-                </div>
-            </body>
-            </html>
-            `);
-        res.end();
+        res.end('Access to this URL is blocked by Google Safe Browsing.');
+        return;
     }
     if (req.url === '/favicon.ico') {
         res.writeHead(200, { 'Content-Type': 'image/x-icon' });
