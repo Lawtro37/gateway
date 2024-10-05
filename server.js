@@ -7,7 +7,7 @@ const fs = require('fs');
 const path = require('path');
 const { env } = require('process');
 
-const GOOGLE_SAFE_BROWSING_API_KEY = process.env.SAFE_API // Replace with your actual API key
+const GOOGLE_SAFE_BROWSING_API_KEY = process.env.SAFE_API
 
 async function isUrlSafe(url) {
     const apiUrl = `https://safebrowsing.googleapis.com/v4/threatMatches:find?key=${GOOGLE_SAFE_BROWSING_API_KEY}`;
