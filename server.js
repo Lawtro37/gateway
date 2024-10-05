@@ -471,9 +471,10 @@ const server = http.createServer(async (req, res) => {
                     .container {
                         background-color: #fff;
                         padding: 20px;
+                        maragin-top: 50px;
                         border-radius: 8px;
                         box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-                        text-align: center;
+                        text-align: left;
                         color: #333; /* Dark text for the container */
                     }
                     h1 {
