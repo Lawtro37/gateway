@@ -10,14 +10,14 @@ const { env } = require('process');
 const GOOGLE_SAFE_BROWSING_API_KEY = process.env.SAFE_API // Replace with your actual API key
 
 async function isUrlSafe(url) {
-    const apiUrl = `http://safebrowsing.googleapis.com/v4/threatMatches:find?key=${GOOGLE_SAFE_BROWSING_API_KEY}`;
+    const apiUrl = `https://safebrowsing.googleapis.com/v4/threatMatches:find?key=${GOOGLE_SAFE_BROWSING_API_KEY}`;
     const requestBody = {
         client: {
             clientId: "lawtrostudios-gateway",
             clientVersion: "1.5.2"
         },
         threatInfo: {
-            threatTypes: ["MALWARE", "SOCIAL_ENGINEERING", "UNWANTED_SOFTWARE", "POTENTIALLY_HARMFUL_APPLICATION", "THREAT_TYPE_UNSPECIFIED"],
+            threatTypes: ["MALWARE", "SOCIAL_ENGINEERING", "UNWANTED_SOFTWARE", "POTENTIALLY_HARMFUL_APPLICATION"],
             platformTypes: ["ANY_PLATFORM"],
             threatEntryTypes: ["URL"],
             threatEntries: [
