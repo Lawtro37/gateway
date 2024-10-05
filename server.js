@@ -10,7 +10,7 @@ const { env } = require('process');
 const GOOGLE_SAFE_BROWSING_API_KEY = process.env.SAFE_API // Replace with your actual API key
 
 async function isUrlSafe(url) {
-    const apiUrl = `https://safebrowsing.googleapis.com/v4/threatMatches:find?key=${GOOGLE_SAFE_BROWSING_API_KEY}`;
+    const apiUrl = `http://safebrowsing.googleapis.com/v4/threatMatches:find?key=${GOOGLE_SAFE_BROWSING_API_KEY}`;
     const requestBody = {
         client: {
             clientId: "lawtrostudios-gateway",
@@ -439,7 +439,7 @@ const server = http.createServer(async (req, res) => {
                             window.location.href = url;
                         });
                     </script>
-                    <h5> more info <a href="info">here</a> </h5>
+                    <p> more info <a href="info">here</a> <p>
                 </div>
                 <h5>Developed by <a href="https://LawtroStudios.com">Lawtro</a> 🙂👍</h5>
             </body>
