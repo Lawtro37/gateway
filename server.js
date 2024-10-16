@@ -6,8 +6,11 @@ const os = require('os');
 const fs = require('fs');
 const path = require('path');
 const { env } = require('process');
+const { randomUserAgent } = require('random-useragent');
+const HttpsProxyAgent = require('https-proxy-agent');
+const doh = require('dohjs');
 
-const GOOGLE_SAFE_BROWSING_API_KEY = process.env.SAFE_API
+const GOOGLE_SAFE_BROWSING_API_KEY = process.env.SAFE_API // Replace with your actual API key
 
 async function isUrlSafe(url) {
     const apiUrl = `https://safebrowsing.googleapis.com/v4/threatMatches:find?key=${GOOGLE_SAFE_BROWSING_API_KEY}`;
@@ -87,7 +90,7 @@ if (!fs.existsSync(logsDir)) {
     fs.mkdirSync(logsDir, { recursive: true });
 }
 
-setInterval(() => {
+setInterval(async () => {
     log('Saving logs...');
 
     // Append error log to file
@@ -118,7 +121,29 @@ setInterval(() => {
             log('Session log file updated successfully.');
         }
     });
+
+    getNewProxy().then((data) => {
+        proxyUrl = data;
+        log('New Proxy URL: ' + proxyUrl);
+    });
 }, 1000 * 60 * 5);
+
+async function getNewProxy() {
+    const proxyApiUrl = 'http://pubproxy.com/api/proxy?limit=1&format=txt&https=true&level=elite&last_check=60&speed=10&limit=1&country=US';
+    try {
+        const response = await axios.get(proxyApiUrl);
+        if(response.status !== 200 || !response.data || response.data == "No proxy") {  
+            log("error", 'Error fetching proxy URL: ' + response.statusText);
+            return null; // Return null if an error occurs
+        }
+        const proxyUrl = response.data;
+        log('Proxy URL: ' + proxyUrl);
+        return proxyUrl;
+    } catch (error) {
+        log("error", error.message);
+        return null; // Return null if an error occurs
+    }
+}
 
 headersSent = false;
 
@@ -136,16 +161,76 @@ function getNetworkIP() {
     return '127.0.0.1'; // Fallback to localhost if no external IP is found
 }
 
+// Example proxy URL
+let proxyUrl = "160.86.242.23:8080";
+const proxy = 'http://pubproxy.com/api/proxy?limit=1&format=txt&https=true&level=elite&last_check=60&speed=10&limit=1&country=US';
+
+getNewProxy().then((data) => {
+    proxyUrl = data;
+    log('Proxy URL: ' + proxyUrl);
+});
+
 const networkIP = "gateway.lawtrostudios.com";
 log(`Server IP address: (http(s)://)${networkIP} (${getNetworkIP()})`);
 
 const server = http.createServer(async (req, res) => {
     let ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
-    if(!req.connection.encrypted && process.env.FORCE_HTTPS == 'true') {
+    if(!req.socket.encryipted && process.env.FORCE_HTTPS === 'true') {
         res.writeHead(301, { 'Location': 'https://' + req.headers.host + req.url });
         res.end();
         return;
     }
+    if(req.headers['x-forwarded-proto'] === 'http' && process.env.FORCE_HTTPS === 'true') {
+        res.writeHead(301, { 'Location': 'https://' + req.headers.host + req.url });
+        res.end();
+        return;
+    }
+    //detect if user is valid
+    if(req.headers['user-agent'] != "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3") {
+        res.writeHead(403, { 'Content-Type': 'text/html' });
+        res.end(`
+            <!DOCTYPE html>
+            <html lang="en">
+            <head>
+                <meta charset="UTF-8">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                <title>Blocked By Safe Brousing</title>
+                <style>
+                    body {
+                        font-family: Arial, sans-serif;
+                        background-color: #ff4d4d; /* Light red background */
+                        color: #fff; /* White text for readability */
+                        display: flex;
+                        justify-content: center;
+                        align-items: center;
+                        height: 100vh;
+                        margin: 0;
+                    }
+                    .container {
+                        background-color: #fff;
+                        padding: 20px;
+                        border-radius: 8px;
+                        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+                        text-align: center;
+                        color: #333; /* Dark text for the container */
+                    }
+                    h1 {
+                        margin-bottom: 20px;
+                        color: #ff4d4d; /* Light red color for the heading */
+                    }
+                </style>
+            </head>
+            <body>
+                <div class="container">
+                    <h1>Access Denied</h1>
+                    <p>suspicus user.</p>
+                </div>
+            </body>
+            </html>
+        `);
+        return;
+    }
+
     const isSafe = await isUrlSafe(req.url);
     if (!isSafe) {
         res.writeHead(403, { 'Content-Type': 'text/html' });
@@ -436,6 +521,8 @@ const server = http.createServer(async (req, res) => {
                         document.querySelector('form').addEventListener('submit', (event) => {
                             event.preventDefault();
                             const url = document.querySelector('input[name="url"]').value;
+                            //base64 encode the url
+                            url = btoa(url);
                             window.location.href = url;
                         });
                     </script>
@@ -547,36 +634,60 @@ const server = http.createServer(async (req, res) => {
         return;
     }
     if(req.url.startsWith('/raw/')) {
-        const requestedSite = req.url.slice(5);
-        log(`ip: ${ip} requested raw content of ${requestedSite}`);
-        try {
-            // Fetch the HTML content from the target UaRL with headers and timeout
-            const response = await axios.get("https://"+requestedSite, {
-                headers: {
-                    'User-Agent': req.headers['user-agent'],
-                    'Referer': requestedSite,
-                    'Accept': req.headers['accept'],
-                    'Accept-Language': req.headers['accept-language'],
-                    'Cookie': req.headers['cookie'] // Forward cookies if present
-                },
-                httpsAgent: new https.Agent({ rejectUnauthorized: false }), // Handle HTTPS requests
-                timeout: 15000 // Set timeout to 15 seconds
-            }).catch((error) => {
-                log("error", 'Error occurred when fetching raw data: ' + error.message);
-                res.writeHead(500, { 'Content-Type': 'text/html' });
-                res.end(`An error occurred: ${error.message}`);
-                return;
-            });
+        // deprecated
+        res.writeHead(200, { 'Content-Type': 'text/html' });
+        res.write(`
+            <!DOCTYPE html>
+            <html lang="en">
+            <head>
+                <meta charset="UTF-8">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            </head>
+            <body>
+                <h1>Raw Content</h1>
+                <p>Raw content is not supported in this version of the gateway.</p>
+                <p>Due to DNS filter restrictions raw data responses have been deprocated.</p>
+                <p>An updated version may be indroduced in the future.</p>
+            </body>
+            </html>
+        `);
+        res.end();
+        return;
 
-            // Set the response headers
-            res.writeHead(200, response.headers);
-            res.end(response.data);
-            return;
-        } catch (error) {
-            log("error", 'Error occurred when fetching raw data: ' + error.message);
-            res.writeHead(500, { 'Content-Type': 'text/html' });
-            res.end(`An error occurred: ${error.message}`);
-        }
+        // ----------------- DEPRECATED -----------------
+
+        // const requestedSite = req.url.slice(5);
+        // log(`ip: ${ip} requested raw content of ${requestedSite}`);
+        // try {
+        //     // Fetch the HTML content from the target UaRL with headers and timeout
+        //     const response = await axios.get("https://"+requestedSite, {
+        //         headers: {
+        //             'User-Agent': req.headers['user-agent'],
+        //             'Referer': requestedSite,
+        //             'Accept': req.headers['accept'],
+        //             'Accept-Language': req.headers['accept-language'],
+        //             'Cookie': req.headers['cookie'] // Forward cookies if present
+        //         },
+        //         httpsAgent: new https.Agent({ rejectUnauthorized: false }), // Handle HTTPS requests
+        //         timeout: 15000 // Set timeout to 15 seconds
+        //     }).catch((error) => {
+        //         log("error", 'Error occurred when fetching raw data: ' + error.message);
+        //         res.writeHead(500, { 'Content-Type': 'text/html' });
+        //         res.end(`An error occurred: ${error.message}`);
+        //         return;
+        //     });
+
+        //     // Set the response headers
+        //     res.writeHead(200, response.headers);
+        //     res.end(response.data);
+        //     return;
+        // } catch (error) {
+        //     log("error", 'Error occurred when fetching raw data: ' + error.message);
+        //     res.writeHead(500, { 'Content-Type': 'text/html' });
+        //     res.end(`An error occurred: ${error.message}`);
+        // }
+
+        // ----------------- DEPRECATED -----------------
     }
     try {
         headersSent = false;
@@ -586,23 +697,68 @@ const server = http.createServer(async (req, res) => {
 
         // Ensure the URL starts with 'http://' or 'https://'
         if (!requestedSite.startsWith('http://') && !requestedSite.startsWith('https://')) {
-            requestedSite = 'http://' + requestedSite;
+            requestedSite = 'https://' + requestedSite;
         }
 
         siteLog.push({ip: ip, site: requestedSite});
         log(`ip: ${ip} requested site: ${requestedSite}`);
 
+        if(requestedSite.startsWith('http://')) {
+            res.writeHead(301, { 'Location': 'https://' + requestedSite.replace('http://', '') });
+            res.end();
+            return;
+        }
+
+        // Ensure the requested site uses HTTPS
+        if (!requestedSite.startsWith('https://')) {
+            res.writeHead(301, { 'Location': 'https://' + requestedSite });
+            res.end();
+            return;
+        }
+
+        // Configure the proxy agent
+        const proxyAgent = new HttpsProxyAgent(proxyUrl);
+
+        // Randomize User-Agent
+        const userAgent = randomUserAgent();
+
+        // Perform DNS over HTTPS query through the proxy
+        const dnsResponse = await doh.query({
+            name: new URL(requestedSite).hostname,
+            type: 'A',
+            dns: 'https://cloudflare-dns.com/dns-query', // Using Cloudflare's DoH service
+            agent: proxyAgent // Use the proxy agent for the DoH request
+        });
+
+        if (!dnsResponse.answers.length) {
+            log("error", 'DNS query failed');
+            res.writeHead(500, { 'Content-Type': 'text/html' });
+            res.end('DNS query failed');
+            return;
+        }
+
+        const ipAddress = dnsResponse.answers[0].data;
+
         // Fetch the HTML content from the target URL with headers and timeout
         let response = await axios.get(requestedSite, {
             headers: {
-                'User-Agent': req.headers['user-agent'],
+                'User-Agent': userAgent,
                 'Referer': requestedSite,
-                'Accept': req.headers['accept'],
+                'Accept': req.headers['accept'], // Forward the Accept header
                 'Accept-Language': req.headers['accept-language'],
                 'Cookie': req.headers['cookie'] // Forward cookies if present
             },
-            httpsAgent: new https.Agent({ rejectUnauthorized: false }), // Handle HTTPS requests
-            timeout: 15000 // Set timeout to 15 seconds
+            httpsAgent: new https.Agent({
+                rejectUnauthorized: true // Validate certificates
+            }),
+            timeout: 15000, // Set timeout to 15 seconds
+            proxy: false, // Disable default proxy settings
+            resolveWithFullResponse: true,
+            lookup: (hostname, options, callback) => {
+                callback(null, ipAddress, 4); // Use the resolved IP address
+            },
+            httpAgent: proxyAgent, // Use the proxy agent for HTTP requests
+            httpsAgent: proxyAgent // Use the proxy agent for HTTPS requests
         });
 
         // Parse the base URL
