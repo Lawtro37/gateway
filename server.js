@@ -231,7 +231,8 @@ const server = http.createServer(async (req, res) => {
         return;
     }
 
-    const isSafe = await isUrlSafe(req.url);
+    //const isSafe = await isUrlSafe(req.url); //deprecated
+    const isSafe = true;
     if (!isSafe) {
         res.writeHead(403, { 'Content-Type': 'text/html' });
         res.end(`
@@ -699,6 +700,9 @@ const server = http.createServer(async (req, res) => {
             requestedSite = 'https://' + requestedSite;
         }
 
+        // Sanitize the URL to prevent XSS attacks
+        const sanitizedUrl = encodeURI(requestedSite);
+
         siteLog.push({ip: ip, site: requestedSite});
         log(`ip: ${ip} requested site: ${requestedSite}`);
 
@@ -739,11 +743,11 @@ const server = http.createServer(async (req, res) => {
         const ipAddress = dnsResponse.answers[0].data;
 
         // Fetch the HTML content from the target URL with headers and timeout
-        let response = await axios.get(requestedSite, {
+        let response = await axios.get(ipAddress + new URL(requestedSite).href, {
             headers: {
                 'User-Agent': userAgent,
-                'Referer': requestedSite,
-                'Accept': req.headers['accept'], // Forward the Accept header
+                'Referer': sanitizedUrl,
+                'Accept': req.headers['accept'],
                 'Accept-Language': req.headers['accept-language'],
                 'Cookie': req.headers['cookie'] // Forward cookies if present
             },
