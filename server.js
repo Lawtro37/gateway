@@ -186,7 +186,7 @@ const server = http.createServer(async (req, res) => {
         return;
     }
     //detect if user is valid
-    if(req.headers['user-agent'] != "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3") {
+    if(req.headers['user-agent'] != "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.0.0 Safari/537.36") {
         res.writeHead(403, { 'Content-Type': 'text/html' });
         res.end(`
             <!DOCTYPE html>
