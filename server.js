@@ -743,7 +743,7 @@ const server = http.createServer(async (req, res) => {
         const ipAddress = dnsResponse.answers[0].data;
 
         // Fetch the HTML content from the target URL with headers and timeout
-        let response = await axios.get(ipAddress + new URL(requestedSite).href, {
+        let response = await axios.get("https://" + encodeURI(ipAddress + new URL(requestedSite).href), {
             headers: {
                 'User-Agent': userAgent,
                 'Referer': sanitizedUrl,
@@ -758,7 +758,7 @@ const server = http.createServer(async (req, res) => {
             proxy: false, // Disable default proxy settings
             resolveWithFullResponse: true,
             lookup: (hostname, options, callback) => {
-                callback(null, ipAddress, 4); // Use the resolved IP address
+                callback(null, encodeURI(ipAddress), 4); // Use the resolved IP address
             },
             httpAgent: proxyAgent, // Use the proxy agent for HTTP requests
             httpsAgent: proxyAgent // Use the proxy agent for HTTPS requests
