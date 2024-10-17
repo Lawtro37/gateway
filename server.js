@@ -742,10 +742,11 @@ const server = http.createServer(async (req, res) => {
 
         const ipAddress = dnsResponse.answers[0].data;
 
+        //log the ip address
         log("DoH ip: " + ipAddress)
         log("obfuscated url: https://" + ipAddress + new URL(requestedSite).href)
         log("sanitised url: https://" + encodeURI(ipAddress + new URL(requestedSite).href))
-        
+
         // Fetch the HTML content from the target URL with headers and timeout
         let response = await axios.get("https://" + encodeURI(ipAddress + new URL(requestedSite).href), {
             headers: {
