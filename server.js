@@ -7,7 +7,7 @@ const fs = require('fs');
 const path = require('path');
 const { env } = require('process');
 const { randomUserAgent } = require('random-useragent');
-const HttpsProxyAgent = require('https-proxy-agent');
+const { HttpsProxyAgent } = require('https-proxy-agent');
 const doh = require('dohjs');
 
 const GOOGLE_SAFE_BROWSING_API_KEY = process.env.SAFE_API // Replace with your actual API key
