@@ -522,13 +522,12 @@ const server = http.createServer(async (req, res) => {
                             event.preventDefault();
                             const url = document.querySelector('input[name="url"]').value;
                             //base64 encode the url
-                            url = btoa(url);
+                            url = url;
                             window.location.href = url;
                         });
                     </script>
                     <p> more info <a href="info">here</a> <p>
                 </div>
-                <h5>Developed by <a href="https://LawtroStudios.com">Lawtro</a> 🙂👍</h5>
             </body>
             </html>
         `);
